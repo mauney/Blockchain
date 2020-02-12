@@ -1,6 +1,3 @@
-# Paste your version of blockchain.py from the basic_block_gp
-# folder here
-
 import hashlib
 import json
 from time import time
@@ -15,7 +12,7 @@ class Blockchain(object):
         self.current_transactions = []
 
         # Create the genesis block
-        self.new_block(previous_hash=1, proof=100)
+        self.new_block(previous_hash="I'm a teapot.", proof=100)
 
     def new_block(self, proof, previous_hash=None):
         """
@@ -64,11 +61,11 @@ class Blockchain(object):
         # We must make sure that the Dictionary is Ordered,
         # or we'll have inconsistent hashes
 
-        # Create the block_string
+        # TODO: Create the block_string
         string_object = json.dumps(block, sort_keys=True)
         block_string = string_object.encode()
 
-        # Hash this string using sha256
+        # TODO: Hash this string using sha256
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()
 
@@ -78,7 +75,7 @@ class Blockchain(object):
         # hash to a string of hexadecimal characters, which is
         # easier to work with and understand
 
-        # Return the hashed block string in hexadecimal format
+        # TODO: Return the hashed block string in hexadecimal format
         return hex_hash
 
     @property
@@ -93,20 +90,18 @@ class Blockchain(object):
         in an effort to find a number that is a valid proof
         :return: A valid proof for the provided block
         """
-
+        
         block_string = json.dumps(block, sort_keys=True)
-        seed = 0
-        proof = f'I am Groot. {seed} 42'
+        proof = 0
         while self.valid_proof(block_string, proof) is False:
-            seed += 1
-            proof = f'I am Groot. {seed} 42'
+            proof += 1
 
         return proof
 
     @staticmethod
     def valid_proof(block_string, proof):
         """
-        Validates the Proof:  Does hash(block_string, proof) contain 6
+        Validates the Proof:  Does hash(block_string, proof) contain 3
         leading zeroes?  Return true if the proof is valid
         :param block_string: <string> The stringified block to use to
         check in combination with `proof`
@@ -118,7 +113,7 @@ class Blockchain(object):
         guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        return guess_hash[:2] == '00'
+        return guess_hash[:6] == "000000"
 
 
 # Instantiate our Node
@@ -133,29 +128,18 @@ print(blockchain.chain)
 print(blockchain.hash(blockchain.last_block))
 
 
-@app.route('/mine', methods=['POST'])
+@app.route('/mine', methods=['GET'])
 def mine():
     # Run the proof of work algorithm to get the next proof
-    # proof = blockchain.proof_of_work(blockchain.last_block)
-    data = request.get_json()
-    proof = data.get('proof', None)
-    miner_id = data.get('id', None)
-
-    if not proof or not miner_id:
-        response = {
-            'Error': 'Both a proof and an id must be submitted.',
-        }
-        return response, 400
+    proof = blockchain.proof_of_work(blockchain.last_block)
 
     # Forge the new Block by adding it to the chain with the proof
-    # previous_hash = blockchain.hash(blockchain.last_block)
-    # new_block = blockchain.new_block(proof, previous_hash)
-
-    block_string = json.dumps(blockchain.last_block, sort_keys=True)
-    result = blockchain.valid_proof(block_string, proof)
+    previous_hash = blockchain.hash(blockchain.last_block)
+    new_block = blockchain.new_block(proof, previous_hash)
 
     response = {
-        'result': result
+        # TODO: Send a JSON response with the new block
+        "block": new_block
     }
 
     return jsonify(response), 200
@@ -164,18 +148,9 @@ def mine():
 @app.route('/chain', methods=['GET'])
 def full_chain():
     response = {
-        # Return the chain and its current length
+        # TODO: Return the chain and its current length
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
-    }
-    return jsonify(response), 200
-
-
-@app.route('/last_block', methods=['GET'])
-def last_block():
-    response = {
-        # Return the last block in the chain
-        'last_block': blockchain.last_block,
     }
     return jsonify(response), 200
 
