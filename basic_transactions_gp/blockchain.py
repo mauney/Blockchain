@@ -1,5 +1,3 @@
-# Paste your version of blockchain.py from the client_mining_p
-# folder here
 # Paste your version of blockchain.py from the basic_block_gp
 # folder here
 
@@ -50,6 +48,23 @@ class Blockchain(object):
         # Return the new block
         return block
 
+    def new_transaction(self, sender, recipient, amount):
+        """
+        Add a new transaction to the list of transactions
+        :param sender: <str> Address of the Sender
+        :param recipient: <str> Address of the Recipient
+        :param amount: <int> Amount
+        :return: <int> The index of the `block` that will hold this transaction
+        """
+        transaction = {
+            "sender": sender,
+            "recipient": recipient,
+            "amount": amount,
+        }
+        self.current_transactions.append(transaction)
+        index = len(self.chain) + 1
+        return index
+
     def hash(self, block):
         """
         Creates a SHA-256 hash of a Block
@@ -87,7 +102,6 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-
     @staticmethod
     def valid_proof(block_string, proof):
         """
@@ -105,9 +119,6 @@ class Blockchain(object):
 
         return guess_hash[:5] == '00000'
 
-    def new_transaction(self, sender, recipient, amount):
-        pass
-
 
 # Instantiate our Node
 app = Flask(__name__)
@@ -123,29 +134,38 @@ blockchain = Blockchain()
 def mine():
     # Check that 'proof', and 'id' are present
     data = request.get_json()
-    proof = data.get('proof', None)
-    miner_id = data.get('id', None)
 
-    if not proof or not miner_id:
+    if 'proof' not in data or 'id' not in data:
         response = {
             'Error': 'Both a proof and an id must be submitted.',
         }
         return response, 400
 
+    proof = data.get('proof')
+    miner_id = data.get('id')
+
     # Test the submitted proof
     block_string = json.dumps(blockchain.last_block, sort_keys=True)
-    success = blockchain.valid_proof(block_string, proof)
 
-    if success:
+    if blockchain.valid_proof(block_string, proof):
+
+        index = blockchain.new_transaction("0", miner_id, 1)
+
         # Forge the new Block by adding it to the chain with the proof
         previous_hash = blockchain.hash(blockchain.last_block)
-        blockchain.new_block(proof, previous_hash)
+        block = blockchain.new_block(proof, previous_hash)
 
-    response = {
-        'success': success
-    }
+        response = {
+            'message': 'New Block Forged',
+            'new_block': block,
+        }
 
-    return jsonify(response), 200
+        return jsonify(response), 200
+
+    else:
+        response = {'message': 'proof is invalid or has been submitted previously'}
+
+        return jsonify(response), 200
 
 
 @app.route('/chain', methods=['GET'])
@@ -167,7 +187,20 @@ def last_block():
 
 @app.route('/transactions/new', methods=['POST'])
 def transaction_new():
-    pass
+    data = request.get_json()
+
+    required = ['sender', 'recipient', 'amount']
+    if not all(k in data for k in required):
+        response = {'message': 'missing one or more values'}
+        return jsonify(response), 400
+
+    index = blockchain.new_transaction(data['sender'],
+                                       data['recipient'],
+                                       data['amount'])
+
+    response = {'message': f'Transactions included in block {index}'}
+
+    return jsonify(response), 200
 
 
 # Run the program on port 5000

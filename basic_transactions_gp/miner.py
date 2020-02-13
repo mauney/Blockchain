@@ -67,28 +67,30 @@ if __name__ == '__main__':
             break
 
         # Get the block from `data` and use it to look for a new proof
-        print(f'Starting proof_of_work for block {data["index"]}.')
+        index = data.get("index")
+        print(f'Starting proof_of_work for block {index}.')
         start = time.time()
         new_proof = proof_of_work(data)
         end = time.time()
-        print((f'proof_of_work for block {data["index"]} finished in {end - start:.1f} seconds.'))
+        print(f'Proof_of_work done for block {index}.')
+        print(f'Proof completed in {end - start:.1f} seconds.')
 
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
 
         r = requests.post(url=node + "/mine", json=post_data)
-        mine_response = r.json()
-        if mine_response['success']:
-            coins += 1
-            print(f'Mining for block {data["index"]} succeeded')
-        else:
-            print(f'Mining for block {data["index"]} did not succeed')
+        # TODO handle non-json response
 
+        data = r.json()
         # If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-        if mine_response['success']:
+        if data['message'] == 'New Block Forged':  
+            print(f'Mining for block {index} succeeded')
+            coins += 1
             print(f'Total number of coins is now {coins}')
         else:
-            print(mine_response)
+            print(f'Mining for block {index} did not succeed')
+            print(data['message'])
+
         print('')

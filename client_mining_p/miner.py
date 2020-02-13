@@ -37,7 +37,7 @@ def valid_proof(block_string, proof):
     guess = f'{block_string}{proof}'.encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
 
-    return guess_hash[:6] == '000000'
+    return guess_hash[:5] == '00000'
 
 
 if __name__ == '__main__':
@@ -71,12 +71,14 @@ if __name__ == '__main__':
         start = time.time()
         new_proof = proof_of_work(data)
         end = time.time()
-        print((f'proof_of_work for block {data["index"]} finished in {end - start:.1f} seconds.'))
+        print(f'Proof_of_work done for block {data["index"]}.')
+        print(f'Proof completed in {end - start:.1f} seconds.')
 
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
 
         r = requests.post(url=node + "/mine", json=post_data)
+        # TODO handle non-json response
         mine_response = r.json()
         if mine_response['success']:
             coins += 1
