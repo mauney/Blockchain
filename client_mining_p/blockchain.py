@@ -85,23 +85,6 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self, block):
-        """
-        Simple Proof of Work Algorithm
-        Stringify the block and look for a proof.
-        Loop through possibilities, checking each one against `valid_proof`
-        in an effort to find a number that is a valid proof
-        :return: A valid proof for the provided block
-        """
-
-        block_string = json.dumps(block, sort_keys=True)
-        seed = 0
-        proof = f'I am Groot. {seed} 42'
-        while self.valid_proof(block_string, proof) is False:
-            seed += 1
-            proof = f'I am Groot. {seed} 42'
-
-        return proof
 
     @staticmethod
     def valid_proof(block_string, proof):

@@ -1,7 +1,7 @@
 Create a method in the `Blockchain` class called `new_transaction` 
 that adds a new transaction to the list of transactions:
 
-    :param sender: <str> Address of the Recipient
+    :param sender: <str> Address of the Sender
     :param recipient: <str> Address of the Recipient
     :param amount: <int> Amount
     :return: <int> The index of the `block` that will hold this transaction
