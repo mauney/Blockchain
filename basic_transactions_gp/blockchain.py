@@ -163,7 +163,8 @@ def mine():
         return jsonify(response), 200
 
     else:
-        response = {'message': 'proof is invalid or has been submitted previously'}
+        response = {'message': (f'proof for block {index} is invalid'
+                                ' or has been submitted previously')}
 
         return jsonify(response), 200
 
